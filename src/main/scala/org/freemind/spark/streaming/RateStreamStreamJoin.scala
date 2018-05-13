@@ -92,16 +92,17 @@ object RateStreamStreamJoin {
       Some(query)
     }
 
-    def outputToMysql(theJoin: sql.DataFrame): Option[StreamingQuery] = {
+    def outputToMysql(theJoin: sql.DataFrame, outer: Boolean): Option[StreamingQuery] = {
       println("Output to mysql")
       //Need to create a
       val url="jdbc:mysql://localhost:3306/danube"
       val user ="danube"
       val pwd = "temp123"
-      val table = "impression_click"
+      val table = if (outer) "impression_click_outer" else "impression_click"
 
       val writer = new JDBCSink(url,user, pwd, table)
-      val query = theJoin.as[(String, String, String, String)]
+      //use as generic as possible
+      val query = theJoin
         .writeStream
         .foreach(writer)
         .trigger(Trigger.ProcessingTime("25 seconds"))
@@ -145,12 +146,13 @@ object RateStreamStreamJoin {
       """), joinType = "leftOuter")
 
     val theJoin = if (args.length > 1) leftOuter else innerJoin
+    val outer = if (args.length > 1) true else false
 
     val query: Option[StreamingQuery] = sink match {
       case "console" => outputToConsole(theJoin)
       case "memory" => outputToMemory(theJoin)
       case "parquet" => outputToParquet(theJoin)
-      case "mysql" => outputToMysql(theJoin)
+      case "mysql" => outputToMysql(theJoin, outer)
       case _ => None
     }
 
