@@ -1,0 +1,17 @@
+# This should cover all modules(**/) and no need to specify .gitigore for individual module.  Add here as needed.
+# The top part is for directories.  The bottom is for files.  Files do not need to prefixed with (**/)
+
+**/target
+**/.classpath
+**/.project
+**/.settings
+**/bin
+**/build
+**/.gradle
+*.ipr
+*.iml
+*.iws
+.idea
+**/impression_click
+**/samples
+**/spark-warehouse
