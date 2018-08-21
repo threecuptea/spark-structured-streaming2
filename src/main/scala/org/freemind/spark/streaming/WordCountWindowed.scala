@@ -6,10 +6,11 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 
 /**
-  * nc -lk 9999
+  * Start nc as the followings
+  * 'nc -lk 9999'
   *
-  * $SPARK_HOME/bin/spark-submit --master local[4] --class org.freemind.spark.streaming.WordCountWindowed \
-  * target/scala-2.11/spark-structured-streaming_2.11-0.1.jar localhost 9999 10 5
+  * $SPARK_HOME/bin/spark-submit -master local[4] --class org.freemind.spark.streaming.WordCountWindowed \
+  * build/libs/spark-structured-streaming2-0.0.1-SNAPSHOT.jar localhost 9999 10 5
   *
   * The default output mode is 'Append'.  I will get error if I use 'Append' mode since This is applicable only on the
   * queries where existing rows in the Result Table are not expected to change.   This application does not have

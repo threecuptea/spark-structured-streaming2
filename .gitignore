@@ -13,5 +13,5 @@
 *.iws
 .idea
 **/impression_click
-**/samples
+**/sample
 **/spark-warehouse

@@ -33,6 +33,17 @@ import org.apache.spark.sql.streaming.{StreamingQuery, Trigger}
   * if there no new data being received in the stream. In short, if any of the two input streams being joined
   * does not receive data for a while, the outer (both cases, left or right) output may get delayed.
   *
+  * For non-mysql options, do the followings.  Specify optional outer if you want to use leftOuterJoin
+  *
+  * $SPARK_HOME/bin/spark-submit --master local[4] --class org.freemind.spark.streaming.RateStreamStreamJoin \
+  * build/libs/spark-structured-streaming2-0.0.1-SNAPSHOT.jar (console|memory|parquet) [outer]
+  *
+  * For mysql options, do the followings.  Specify optional outer if you want to use leftOuterJoin
+  *
+  * $SPARK_HOME/bin/spark-submit --master local[4] --packages mysql:mysql-connector-java:5.1.39 \
+  * --class org.freemind.spark.streaming.RateStreamStreamJoin build/libs/spark-structured-streaming2-0.0.1-SNAPSHOT.jar
+  * mysql [outer]
+  *
   * @author sling/ threecuptea
   */
 object RateStreamStreamJoin {
@@ -159,23 +170,6 @@ object RateStreamStreamJoin {
     if (query.isDefined)
       query.get.awaitTermination()
 
-    /*
-
-    innerJoin.writeStream
-      .foreach(new ForeachWriter[Row] {
-
-        override def process(row: Row): Unit = {
-          println(s"Processing ${row}")
-        }
-
-        override def close(errorOrNull: Throwable): Unit = {}
-
-        override def open(partitionId: Long, version: Long): Boolean = {
-          true
-        }
-      })
-      .start()
-  */
-  }
+    }
 
 }
