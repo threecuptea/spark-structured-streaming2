@@ -4,6 +4,7 @@ import java.sql.Timestamp
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.streaming.StreamingQuery
 
 /**
   * Start nc as the followings
@@ -12,7 +13,7 @@ import org.apache.spark.sql.functions._
   * $SPARK_HOME/bin/spark-submit -master local[4] --class org.freemind.spark.streaming.WordCountWindowed \
   * build/libs/spark-structured-streaming2-0.0.1-SNAPSHOT.jar localhost 9999 10 5
   *
-  * The default output mode is 'Append'.  I will get error if I use 'Append' mode since This is applicable only on the
+  * The default output mode is 'Append'.  I will get error if I use 'Append' mode since this is applicable only on the
   * queries where existing rows in the Result Table are not expected to change.   This application does not have
   * watermark. Therefore, the result is always subject to change and in partial aggregate state.  Append will have
   * no trouble if no aggregation is involved.
@@ -20,7 +21,7 @@ import org.apache.spark.sql.functions._
   * Complete Mode - The entire updated Result Table will be written to the external storage.
   * Append Mode - Only the new rows appended in the Result Table since the last trigger will be written to the storage.
   * This is applicable only on the queries where existing rows in the Result Table are not expected to change.
-  * written to the external storage.Complete Mode - The entire updated Result Table will be written to the external
+  * Complete Mode - The entire updated Result Table will be written to the external
   * storage. It is up to the storage connector to decide how to handle writing of the entire table.
   *
   * Update Mode - Only the rows that were updated in the Result Table since the last trigger will be written to the
@@ -41,7 +42,7 @@ import org.apache.spark.sql.functions._
   * Without watermark:  only complete and update output modes
   *
   * Queries with joins: Only 'append' mode is supported. Output only once when finalize
-  * Other queries: Complete mode not supported as it is infeasible to keep all unaggregated data in the Result Table.
+  * Other queries: Complete mode not supported as it is infeasible to keep all un-aggregated data in the Result Table.
   *
   * Sinks:
   * File sink: append mode only. exactly-once
@@ -54,6 +55,8 @@ import org.apache.spark.sql.functions._
   * val outStream = logs.writeStream.format("memory").queryName("logs").start()
   *
   * sql("select * from logs").show(truncate = false)
+  *
+  *  nc -lk 9999
   *
   * @author sling/ threecuptea
   */
@@ -79,6 +82,23 @@ object WordCountWindowed {
     val windowDuration = s"${windowSize} seconds"
     val slideDuration = s"${slideSize} seconds"
 
+    val spark = SparkSession.builder().appName("WordCountWindow").config("spark.sql.shuffle.partitions", 1).getOrCreate()
+    import spark.implicits._
+
+    val rawDF = spark.readStream.format("socket").option("host", host).option("port", port).option("includeTimestamp", true).load()
+    val wordsDF = rawDF.as[(String, Timestamp)].flatMap{ case (line, ts) =>
+      line.split(" ").map(word => (word, ts))}.toDF("word", "timestamp")
+
+    val wordWindowDF = wordsDF.groupBy(window('timestamp, windowDuration, slideDuration), 'word).count().sort("window")
+
+    val query: StreamingQuery = wordWindowDF.writeStream.format("console").option("truncate", false).option("numRows", 25)
+      .outputMode("complete").start()
+    query.awaitTermination()
+
+    /*
+    val windowDuration = s"${windowSize} seconds"
+    val slideDuration = s"${slideSize} seconds"
+
     val spark = SparkSession.builder().appName("WordCountWindow").config("spark.sql.shuffle.partitions", 1).
       getOrCreate()
     import spark.implicits._
@@ -99,6 +119,8 @@ object WordCountWindowed {
       option("numRows", 25).outputMode("complete").start()
 
     query.awaitTermination()
+
+    */
 
   }
 
