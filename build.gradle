@@ -27,8 +27,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.apache.spark:spark-core_2.11:2.3.0'
-    compileOnly 'org.apache.spark:spark-sql_2.11:2.3.0'
-    compileOnly 'org.apache.spark:spark-streaming_2.11:2.3.0'
-    compile 'org.apache.spark:spark-sql-kafka-0-10_2.11:2.3.0'    
+    compileOnly 'org.apache.spark:spark-core_2.11:2.4.0'
+    compileOnly 'org.apache.spark:spark-sql_2.11:2.4.0'
+    compileOnly 'org.apache.spark:spark-streaming_2.11:2.4.0'
+    compile 'org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.0'
 }

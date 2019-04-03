@@ -135,6 +135,7 @@ object RateStreamStreamJoin {
     //Generates data at the specified number of rows per second, each output row contains a timestamp and value.
     //Where timestamp is a Timestamp type containing the time of message dispatch, and value is of Long type containing
     //the message count, starting from 0 as the first row.
+
     val impressions = spark.readStream.format("rate").option("rowsPerSecond", 5).option("numPartitions", 1).load().
       select('value.as("impressionAdId"), 'timestamp.as("impressionTime"))
 
@@ -176,55 +177,7 @@ object RateStreamStreamJoin {
 
     if (query.isDefined)
       query.get.awaitTermination()
+
   }
-
-    /*
-    val sink = args(0)
-    val impressions = spark.readStream.format("rate").option("rowsPerSecond", 5).option("numPartitions", 1).load().
-      select($"value".as("adId"), $"timestamp".as("impressionTime"))
-
-
-    val clicks = spark.readStream.format("rate").option("rowsPerSecond", 5).option("numPartitions", 1).load().
-      where((rand() * 100).cast("integer") < 10).
-      select(($"value" - 40).as("adId"), $"timestamp".as("clickTime")).
-      where($"adId" > 0)  // 40 / 5 = 8 seconds, 80/5 = 16
-
-    val impressionsWithWatermark = impressions.select($"adId".as("impressionAdId"), $"impressionTime").
-      withWatermark("impressionTime", "10 seconds")  //It's safe to use 10.  10 < 16, you will not drop something you should not drop
-    //That's why there is gap there.
-    val clicksWithWatermark = clicks.select($"adId".as("clickAdId"), $"clickTime").
-      withWatermark("clickTime", "10 seconds")
-
-    val innerJoin = impressionsWithWatermark.join(clicksWithWatermark, expr(
-      """
-      clickAdId = impressionAdId AND
-      clickTime >= impressionTime AND
-      clickTime <=  impressionTime + interval 10 seconds
-      """))
-
-    val leftOuter = impressionsWithWatermark.join(clicksWithWatermark, expr(
-      """
-      clickAdId = impressionAdId AND
-      clickTime >= impressionTime AND
-      clickTime <=  impressionTime + interval 10 seconds
-      """), joinType = "leftOuter")
-
-    val theJoin = if (args.length > 1) leftOuter else innerJoin
-    val outer = if (args.length > 1) true else false
-
-    val query: Option[StreamingQuery] = sink match {
-      case "console" => outputToConsole(theJoin)
-      case "memory" => outputToMemory(theJoin)
-      case "parquet" => outputToParquet(theJoin)
-      case "mysql" => outputToMysql(theJoin, outer)
-      case _ => None
-    }
-
-    if (query.isDefined)
-      query.get.awaitTermination()
-
-    }
-
-    */
 
 }

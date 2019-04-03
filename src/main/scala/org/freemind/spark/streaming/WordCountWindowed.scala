@@ -10,7 +10,7 @@ import org.apache.spark.sql.streaming.StreamingQuery
   * Start nc as the followings
   * 'nc -lk 9999'
   *
-  * $SPARK_HOME/bin/spark-submit -master local[4] --class org.freemind.spark.streaming.WordCountWindowed \
+  * $SPARK_HOME/bin/spark-submit --master local[4] --class org.freemind.spark.streaming.WordCountWindowed \
   * build/libs/spark-structured-streaming2-0.0.1-SNAPSHOT.jar localhost 9999 10 5
   *
   * The default output mode is 'Append'.  I will get error if I use 'Append' mode since this is applicable only on the
@@ -94,33 +94,6 @@ object WordCountWindowed {
     val query: StreamingQuery = wordWindowDF.writeStream.format("console").option("truncate", false).option("numRows", 25)
       .outputMode("complete").start()
     query.awaitTermination()
-
-    /*
-    val windowDuration = s"${windowSize} seconds"
-    val slideDuration = s"${slideSize} seconds"
-
-    val spark = SparkSession.builder().appName("WordCountWindow").config("spark.sql.shuffle.partitions", 1).
-      getOrCreate()
-    import spark.implicits._
-
-    val lines = spark.readStream.format("socket").
-      option("host", host).option("port", port).option("includeTimestamp", true).
-      load()
-
-    val words = lines.as[(String, Timestamp)].flatMap{ case (line, ts) =>
-     line.split(" ").map(word => (word, ts))}.toDF("word", "timestamp")
-
-    val windowCounts = words.groupBy(
-      window($"timestamp", windowDuration, slideDuration), $"word"
-    ).count().sort("window")
-
-    val query = windowCounts.writeStream.format("console").
-      option("truncate", "false").
-      option("numRows", 25).outputMode("complete").start()
-
-    query.awaitTermination()
-
-    */
 
   }
 

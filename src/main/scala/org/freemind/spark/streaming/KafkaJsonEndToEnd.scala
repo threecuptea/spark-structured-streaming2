@@ -58,7 +58,7 @@ object KafkaJsonEndToEnd {
     }
 
     if (args.length < 1) {
-      System.err.println("Usage: RateStreamStreamJoin <output-sink> [<join>]")
+      System.err.println("Usage: KafkaJsonEndToEnd <output-sink> [<join>]")
       System.exit(-1)
     }
 
